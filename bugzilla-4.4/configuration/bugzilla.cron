@@ -1,0 +1,5 @@
+5 0 * * * root cd /var/www/html/bugzilla ; ./collectstats.pl
+5 1 * * * root cd /var/www/html/bugzilla ; ./whineatnews.pl
+0,15,30,45 * * * * root cd /var/www/html/bugzilla ; ./whine.pl
+5 2 * * * root cd /root ; cp -ar /var/www/* /var/backup/www ; /usr/bin/mysqlhotcopy --user=root --password=bugopolis --noindices --allowold bugs /var/backup
+0 3 * * * root /usr/bin/rdiff-backup  --print-statistics --exclude-device-files --exclude '/var/backup' --exclude '/proc' --exclude '/dev' --exclude '/sys' --exclude '/selinux' --exclude '/tmp' --exclude '/mnt' --exclude '/var/log' / /var/backup/rdiff-backup
