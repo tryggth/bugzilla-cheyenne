@@ -100,7 +100,7 @@
            'testopia-max-allowed-plan-testers' => '500',
            'timetrackinggroup' => 'editbugs',
            'upgrade_notification' => 'latest_stable_release',
-           'urlbase' => '',
+           'urlbase' => 'http://phantom4.bugopolis.com/',
            'use_mailer_queue' => 0,
            'use_see_also' => 1,
            'useclassification' => 0,
