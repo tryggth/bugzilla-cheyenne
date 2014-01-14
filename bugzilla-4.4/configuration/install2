@@ -1,0 +1,163 @@
+##	Install of new system
+##	first thing fastest mirror then update
+
+yum install -y yum-plugin-fastestmirror
+yum update
+reboot
+
+## A feew things we'll need
+
+yum install -y gitflow
+yum install -y wget
+yum install -y httpd
+yum install -y mysql
+yum install -y mysql-server
+yum install -y perl
+
+##	if SSL is required
+
+yum install -y mod_ssl
+
+##	Put in webin now
+##	this file should be put in the sources
+
+vi /etc/yum.repos.d/webmin.repo
+
+##	put in
+
+[Webmin]
+name=Webmin Distribution Neutral
+#baseurl=http://download.webmin.com/download/yum
+mirrorlist=http://download.webmin.com/download/yum/mirrorlist
+enabled=1
+
+##	then do 
+
+wget http://www.webmin.com/jcameron-key.asc
+rpm --import jcameron-key.asc
+
+yum install -y webmin
+
+##	Fix the firewall
+
+firewall-cmd --set-default-zone=public
+firewall-cmd --permanent --add-service=http
+firewall-cmd --permanent --add-service=https
+firewall-cmd --permanent --add-service=ldap
+firewall-cmd --permanent --add-service=ldaps
+firewall-cmd --permanent --add-service=imaps
+firewall-cmd --permanent --add-port=10000/tcp
+firewall-cmd --permanent --add-port=10000/udp
+
+##	Now stop and restart the firewall
+
+systemctl stop firewalld
+systemctl start firewalld
+
+
+##	now do the script to start httpd at boot
+##	now do the script to start mysql-server at boot
+
+systemctl enable httpd.service
+systemctl enable mysqld.service
+
+##	At this point we have a working machine with firewall config correct
+##	http and https both work
+##	mysql and web both active on boot
+##	webmin is in and running
+
+##	next is buzilla, Testopia, and Limesurvey
+
+cd /var/www/html
+git clone -b develop https://github.com/tryggth/bugzilla-cheyenne
+cd /var/www/html/bugzilla-cheyenne/bugzilla-4.4/configuration
+
+cp bugzilla.conf /etc/httpd/conf.d/
+chmod 644 /etc/httpd/conf.d/bugzilla.conf
+
+##  Now we do some bugzilla work
+
+yum install -y "perl(ExtUtils::MM)"
+yum install -y "perl(Digest::SHA)"
+yum install -y "perl(DateTime::TimeZone)"
+yum install -y "perl(DBI)"
+yum install -y "perl(Template)"
+yum install -y "perl(Email::Send)"
+yum install -y "perl(Email::MIME)"
+yum install -y "perl(Math::Random::ISAAC)"
+
+
+##	Optional perl pacs
+
+yum install -y "perl(GD)"
+yum install -y "perl(Chart::Lines)"
+yum install -y "perl(Template::Plugin::GD::Image)"
+yum install -y "perl(GD::Text)"
+yum install -y "perl(GD::Graph)"
+yum install -y "perl(MIME::Parser)"
+yum install -y "perl(XML::Twig)"
+yum install -y "perl(PatchReader)"
+yum install -y "perl(Net::LDAP)"
+yum install -y "perl(Authen::SASL)"
+yum install -y "perl(Net::SMTP::SSL)"
+yum install -y "perl(Authen::Radius)"
+yum install -y "perl(SOAP::Lite)"
+yum install -y "perl(JSON::RPC)"
+yum install -y "perl(JSON::XS)"
+yum install -y "perl(Test::Taint)"
+yum install -y "perl(HTML::Scrubber)"
+yum install -y "perl(Encode::Detect)"
+yum install -y "perl(Email::Reply)"
+yum install -y "perl(HTML::FormatText::WithLinks)"
+yum install -y "perl(TheSchwartz)"
+yum install -y "perl(Daemon::Generic)"
+yum install -y "perl(mod_perl2)"
+yum install -y "perl(Apache2::SizeLimit)"
+yum install -y "perl(File::MimeInfo::Magic)"
+yum install -y "perl(Text::CSV)"
+yum install -y "perl(XML::Validator::Schema)"
+yum install -y "perl(Text::Diff)"
+
+##	reboot now
+
+init 6
+
+##	If all others fail
+##	yum install -y perl-CPAN
+##	/usr/bin/perl install-module.pl --all
+
+##	fix selinux set to disabled
+
+cd /var/www/html/bugzilla-cheyenne/bugzilla-4.4/configuration
+cp config /etc/selinux/
+
+##	Now before running checksetup Make a DB:bugs  User:bugs PASS:bugs
+
+#	Now for Lime Survey
+
+yum install -y php
+yum install -y php-gd
+yum install -y php-gettext
+yum install -y php-mbstring
+yum install -y php-mysql
+yum install -y php-php-gettext
+yum install -y php-ldap
+yum install -y php-imap
+
+##	make the db pluss user  DB:lime  USER:lime PASS:lime
+
+cd /var/www/html/bugzilla-cheyenne/bugzilla-4.4/configuration
+cp limesurvey205plus-build140109.tar.gz /var/www
+cd /var/www/
+tar xzvf limesurvey205plus-build140109.tar.gz
+chown -Rf apache:apache limesurvey
+
+##	lime tar cmd    tar xzvf limesurvey205plus-build140109.tar.gz
+##	add this to the last line of /etc/httpd/conf.d/welcome.conf
+
+Alias /limesurvey "//var/www/limesurvey"
+
+##	restart http
+
+systemctl restart httpd
+
