@@ -1,1 +1,0 @@
-bugzilla-daemon: |/var/www/html/bugzilla/email_in.pl -vvv 2>/tmp/emailin.log

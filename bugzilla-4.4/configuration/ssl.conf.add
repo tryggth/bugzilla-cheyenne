@@ -1,9 +1,0 @@
-
-        AddHandler cgi-script .cgi
-        AddHandler imap-file map
-        <Directory "/var/www/html/bugzilla">
-                AllowOverride Limit
-                Options ExecCGI Indexes
-                DirectoryIndex index.cgi
-        </Directory>
-
